@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Staff Hisab</title>
+<style>
+:root{--ink:#1f1f1f;--grey:#d9d9d9;--lgrey:#efefef;--green:#3aaa00;--orange:#ff9900;--blue:#4a86e8;--line:#b7b7b7}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;color:var(--ink);font-size:15px}
+.wrap{max-width:560px;margin:0 auto;padding:10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:11px 2px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:bold;border-radius:6px;cursor:pointer}
+.tabs button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.panel{display:none}.panel.on{display:block}
+.box{background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:12px}
+h2{margin:0 0 10px;font-size:17px}
+textarea{width:100%;padding:10px;font-size:13px;border:1px solid var(--line);border-radius:5px;font-family:inherit}
+label{display:block;font-size:13px;margin:8px 0 3px;color:#444}
+input,select{width:100%;padding:10px;font-size:15px;border:1px solid var(--line);border-radius:5px;background:#fff}
+.btn{margin-top:12px;width:100%;padding:11px;border:0;border-radius:5px;background:var(--blue);color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
+.btn.gray{background:#777}
+.row2{display:flex;gap:8px}.row2>div{flex:1}
+table.list{width:100%;border-collapse:collapse;font-size:14px}
+table.list th{background:var(--blue);color:#fff;padding:8px 6px;text-align:left}
+table.list td{padding:8px 6px;border-bottom:1px solid #e3e3e3}
+table.list .r{text-align:right}
+.mini{padding:5px 9px;border:1px solid var(--line);background:#fff;border-radius:4px;font-size:12px;cursor:pointer;margin-left:3px}
+.mini.del{color:#c00}
+.empty{color:#777;padding:10px 0;font-size:14px}
+.tot{font-weight:bold;background:var(--lgrey)}
+/* attendance */
+.att-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e3e3e3}
+.att-row .nm{flex:1;font-size:15px}
+.pa{width:42px;height:40px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:17px;font-weight:bold;cursor:pointer}
+.pa.P.on{background:var(--green);color:#fff;border-color:var(--green)}
+.pa.A.on{background:#d93025;color:#fff;border-color:#d93025}
+.pa.L.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+.pa.H.on{background:#8e44ad;color:#fff;border-color:#8e44ad}
+.gridw{overflow-x:auto;margin-top:12px}
+table.grid{border-collapse:collapse;font-size:12px}
+table.grid th,table.grid td{border:1px solid #ddd;padding:3px 5px;text-align:center;min-width:24px}
+table.grid th:first-child,table.grid td:first-child{position:sticky;left:0;background:#fff;text-align:left;min-width:90px;white-space:nowrap}
+table.grid th{background:var(--lgrey)}
+.cOFF{background:#ccc;color:#555;font-size:10px}
+.cP{color:#2b8a00;font-weight:bold}.cA{background:#d93025;color:#fff;font-weight:bold}.cL{background:var(--orange);color:#fff;font-weight:bold}
+.cH{background:#8e44ad;color:#fff;font-weight:bold}
+.hint{font-size:13px;color:#555;margin:0 0 8px}
+/* sheet-style card */
+.card{width:100%;max-width:360px;margin:0 auto 18px;background:#fff;border:1px solid var(--line);font-family:Arial,Helvetica,sans-serif}
+.card table{width:100%;border-collapse:collapse}
+.card td,.card th{border:1px solid var(--line);padding:6px 8px}
+.card .name{background:var(--grey);text-align:center;font-weight:bold;font-size:19px;padding:8px}
+.card .g td{background:var(--grey);font-size:18px}
+.card .g td:first-child{text-align:center;width:58%}
+.card .g td:last-child{text-align:center;font-size:15px;background:#e3e3e3}
+.card .bal td{background:var(--green);color:#fff;font-weight:bold;font-size:16px;text-align:center}
+.card .bal td:last-child{font-size:17px}
+.card .total td{background:var(--orange);font-weight:bold;font-size:18px;text-align:center}
+.card .lm td{background:#cfe2f3;font-weight:bold;text-align:center;font-size:15px}
+.card .total td:first-child{text-align:right;padding-right:20px}
+.card .ab{background:var(--lgrey);text-align:center;font-size:15px}
+.card .hd th{background:var(--blue);color:#fff;font-size:17px;font-weight:bold;text-align:center}
+.card .en td{font-size:15px}
+.card .en td:first-child{text-align:center}
+.card .en.rl td:first-child{text-align:left}
+.rm{font-size:13px}
+.card .en td:last-child{text-align:right}
+.card input.abs{width:46px;padding:2px 3px;font-size:17px;text-align:center;display:inline-block;border:1px solid #999;background:#fff}
+.ctrl{display:flex;gap:8px;max-width:360px;margin:0 auto 12px}
+.ctrl select{flex:1}.ctrl .btn{margin:0;width:auto;padding:11px 16px}
+#shotBox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:100;display:none;flex-direction:column}
+.sbar{display:flex;gap:8px;padding:10px;background:#111}
+.sb{flex:1;padding:12px 6px;border:0;border-radius:6px;background:#4a86e8;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
+.sb.x{background:#777;flex:0 0 84px}
+.simg{flex:1;overflow:auto;padding:10px;text-align:center}
+.simg img{max-width:100%;background:#fff}
+.shint{color:#ddd;font-size:12px;margin:0;padding:8px 12px;background:#111;line-height:1.5}
+#fab{position:fixed;right:16px;bottom:22px;width:58px;height:58px;border-radius:50%;border:0;background:#4a86e8;color:#fff;font-size:26px;box-shadow:0 3px 10px rgba(0,0,0,.35);display:none;z-index:50;cursor:pointer}
+#p3{padding-bottom:84px}
+.card .ad td{background:#fff2cc;font-size:12px;font-weight:bold;text-align:left;line-height:1.5}
+/* collapsible staff cards (screen only) */
+.cw{width:100%;max-width:360px;margin:0 auto 10px}
+.ch{display:flex;justify-content:space-between;align-items:center;background:var(--grey);border:1px solid var(--line);padding:14px 12px;font-size:21px;font-weight:bold;cursor:pointer;user-select:none}
+.ch span:last-child{font-size:15px;color:#444}
+.ch.xl{background:#2e9e4f;border-color:#1f7a3a;color:#fff}
+.ch.xl span:last-child{color:#fff}
+.ch.bk{background:#ff9900;border-color:#c77700;color:#1f1f1f}
+.ch.bk span:last-child{color:#1f1f1f}
+#xlBox{border-color:#2e9e4f!important}
+#bkBox{border-color:#ff9900!important}
+.cw .card{margin:0 auto;border-top:0}
+.cw .card .name{display:none}
+/* salary list */
+.sl{width:100%;max-width:640px;margin:0 auto 18px;background:#fff;font-family:Arial,Helvetica,sans-serif}
+.sl table{width:100%;border-collapse:collapse}
+.sl td,.sl th{border:1px solid var(--line);padding:8px 5px;font-size:13px}
+.sl .ti{background:var(--grey);text-align:center;font-weight:bold;font-size:17px}
+.sl th{background:var(--blue);color:#fff;text-align:left}
+.sl th:not(:first-child),.sl td:not(:first-child){text-align:right}
+.sl .tt td{background:var(--orange);font-weight:bold}
+.sl tr{break-inside:avoid}
+#printArea .sl{max-width:none}
+#printArea{position:absolute;left:-10000px;top:0;width:725px}
+#printArea .card{width:360px;max-width:none;margin:0}
+#printArea .ptitle{font-weight:bold;font-size:15px;text-align:center;padding:4px 0}
+.ctrl input{flex:1;min-width:0}
+/* print look (also applied while measuring) */
+#printArea.pst .card{border:2.5px solid #000;color:#000}
+#printArea.pst .card td,#printArea.pst .card th{border:2.5px solid #000;font-weight:bold}
+#printArea.pst .sl td,#printArea.pst .sl th{border:1.5px solid #000;font-weight:bold;color:#000}
+#printArea.pst .sl th,#printArea.pst .sl .tt td{color:#000}
+#printArea.pst .card .bal td,#printArea.pst .card .hd th{color:#fff}
+#printArea.pst .sl th{color:#fff}
+@page{size:A4;margin:8mm}
+@media print{
+ body{background:#fff}
+ .tabs,.ctrl,.noprint{display:none!important}
+ .wrap{max-width:none}.gridw{overflow:visible}
+ body.printdb .wrap{display:none}
+ body.printdb #printArea{position:static;left:auto;width:auto;display:grid;justify-content:center;gap:10px;align-items:start}
+ body.printdb #printArea .cell{break-inside:avoid}
+ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+ body:not(.printdb) #printArea{display:none}
+}
+</style>
+</head>
+<body>
+<div id="shotBox" class="noprint">
+ <div class="sbar">
+  <button class="sb" onclick="saveShot()">Save image</button>
+  <button class="sb" id="shotShare" onclick="shareShot()" style="display:none">Share</button>
+  <button class="sb x" onclick="closeShot()">Band</button>
+ </div>
+ <div class="simg"><img id="shotImg" alt="Screenshot"></div>
+ <p class="shint">Ye wahi photo hai jo save hogi. Phone ka screenshot (power + volume down) lekar bhi bhej sakte ho. "Save As" box aaye to file ka naam likho (jaise arun.png) aur OK dabao.</p>
+</div>
+<button id="fab" class="noprint" title="Screenshot" onclick="shotDb()">📷</button>
+<div id="printArea"></div>
+<div class="wrap">
+ <div class="tabs">
+  <button id="t1" onclick="show(1)">Staff Master</button>
+  <button id="t2" onclick="show(2)">Advance Entry</button>
+  <button id="t4" onclick="show(4)">Attendance</button>
+  <button id="t3" onclick="show(3)">Database</button>
+ </div>
+
+ <!-- 1. STAFF MASTER -->
+ <div class="panel" id="p1">
+  <div class="box">
+   <h2 id="smTitle">Staff add karo</h2>
+   <label>Staff ka naam</label>
+   <input id="sName" placeholder="Staff Name">
+   <label>Salary (per month)</label>
+   <input id="sSal" type="number" inputmode="decimal" placeholder="Staff Salary">
+   <button class="btn" id="sBtn" onclick="saveStaff()">Staff Add</button>
+   <button class="btn gray" id="sCancel" style="display:none" onclick="cancelEdit()">Cancel</button>
+  </div>
+  <div class="box" id="offBox" style="display:none">
+   <h2 id="offTitle">Staff Off</h2>
+   <label id="offLbl">Off kab se</label>
+   <input id="offDate" type="date">
+   <p class="hint" id="offHint" style="margin-top:6px"></p>
+   <button class="btn" id="offSave" onclick="saveOff()">Save</button>
+   <button class="btn gray" onclick="cancelOff()">Cancel</button>
+   <button class="btn gray" id="offUndo" style="display:none" onclick="undoOff()">Off hatao (galti se kiya tha)</button>
+  </div>
+  <div class="cw" style="max-width:none">
+   <div class="ch" onclick="tgList()"><span>Staff List <span id="sCount" style="font-weight:normal;font-size:15px;color:#555"></span></span><span id="sArr">▼</span></div>
+   <div class="box" id="sListBox" style="display:none;margin-bottom:0;border-top:0;border-radius:0"><div id="sList"></div></div>
+  </div>
+ </div>
+
+ <!-- 2. ADVANCE ENTRY BOOK -->
+ <div class="panel" id="p2">
+  <div class="box">
+   <h2>Advance Entry</h2>
+   <label>Staff</label>
+   <select id="aStaff" onchange="renderAdv()"></select>
+   <div class="row2">
+    <div><label>Date</label><input id="aDate" type="date"></div>
+    <div><label>Amount</label><input id="aAmt" type="number" inputmode="decimal" placeholder="0"></div>
+   </div>
+   <label>Remarks (jo likhna ho)</label>
+   <input id="aRem" type="text" placeholder="Remarks">
+   <button class="btn" onclick="saveAdv()">Advance Save</button>
+  </div>
+  <div class="box">
+   <h2>Advance Book</h2>
+   <input id="aMonth" type="month" onchange="renderAdv()" style="margin-bottom:10px">
+   <div id="aList"></div>
+  </div>
+ </div>
+
+<!-- ATTENDANCE -->
+ <div class="panel" id="p4">
+  <div class="box noprint">
+   <h2>Attendance Entry</h2>
+   <label>Date</label>
+   <input id="attDate" type="date" onchange="renderAttDay()">
+   <div style="margin-top:8px" id="attDay"></div>
+   <button class="btn" onclick="allPresent()">Baaki sab ko Present (P) karo</button>
+   <p class="hint" style="margin-top:8px">P = Present, A = Absence (chutti), L = Late, H = Aadha din (0.5 chutti). Dobara dabane se mark hat jata hai.</p>
+  </div>
+  <div class="box">
+   <h2>Mahine ka Hisab</h2>
+   <div class="noprint"><input id="attMonth" type="month" onchange="renderAttMonth()"></div>
+   <div id="attSum" style="margin-top:10px"></div>
+   <div class="gridw" id="attGrid"></div>
+   <button class="btn noprint" onclick="printAtt()">Print</button>
+  </div>
+ </div>
+
+ <!-- 3. DATABASE -->
+ <div class="panel" id="p3">
+  <div class="tabs" style="max-width:360px;margin:0 auto 12px">
+   <button id="m1" onclick="setMode('card')">Staff Card</button>
+   <button id="m2" onclick="setMode('list')">Salary List</button>
+  </div>
+  <div class="ctrl" id="dAll">
+   <button class="btn gray" style="flex:1" onclick="tgAll(true)">Sabhi Kholo</button>
+   <button class="btn gray" style="flex:1" onclick="tgAll(false)">Sabhi Band</button>
+  </div>
+  <div class="ctrl">
+   <input id="dMonth" type="month" onchange="renderDb()">
+   <select id="dStaff" onchange="renderDb()"></select>
+  </div>
+  <div class="ctrl">
+   <select id="pSize" onchange="setPS()">
+    <option value="auto">Print size: Auto (sab ek page me)</option>
+    <option value="s">Chhota (4 column)</option>
+    <option value="m">Medium (3 column)</option>
+    <option value="b">Bada (2 column)</option>
+   </select>
+   <button class="btn" id="pBtn" onclick="printDb()">Print A4</button>
+  </div>
+  <p class="hint noprint" id="pHint" style="max-width:360px;margin:-4px auto 10px">Print: "Sabhi Staff" chuna ho to sabka, kisi ek staff ko chuna ho to sirf uska card chhapta hai.</p>
+  <div id="dView"></div>
+  <div class="cw noprint">
+   <div class="ch xl" onclick="tgXl()"><span>📊 Excel Download</span><span id="xlArr">▼</span></div>
+   <div class="box" id="xlBox" style="display:none;margin-bottom:0;border-top:0;border-radius:0">
+    <p class="hint">Har mahine ki alag sheet: upar Attendance, phir Advance Entry (sabhi staff), phir Salary List. Pehli sheet me Staff Master.</p>
+    <select id="xMonth"></select>
+    <button class="btn" onclick="xlDownload()">Excel Download</button>
+   </div>
+  </div>
+  <div class="cw noprint">
+   <div class="ch bk" onclick="tgBk()"><span>💾 Backup / Restore</span><span id="bkArr">▼</span></div>
+   <div class="box" id="bkBox" style="display:none;margin-bottom:0;border-top:0;border-radius:0">
+   <p class="hint">Staff, advance aur attendance, poora data ka backup.</p>
+   <button class="btn" onclick="bkDownload()">Backup Download (file)</button>
+   <button class="btn gray" onclick="bkCopy()">Backup Copy (text)</button>
+   <label>Restore: backup file chuno</label>
+   <input id="bkFile" type="file" accept=".json,application/json" onchange="bkRead(this)">
+   <label>ya backup text yaha paste karo</label>
+   <textarea id="bkText" rows="3" placeholder="Backup text"></textarea>
+   <button class="btn" onclick="bkRestore($('bkText').value)">Restore (text se)</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+<script>
+var KEY='staff_hisab_v1', db={staff:[],adv:[],att:{}}, editId=null;
+function load(){try{var s=localStorage.getItem(KEY);if(s)db=JSON.parse(s)}catch(e){}if(!db.att)db.att={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+function $(id){return document.getElementById(id)}
+/* Android app bridge (APK me file save aur print ke liye; browser me normal chalta hai) */
+var APP=!!(window.AndroidBridge&&window.AndroidBridge.saveFile);
+if(APP&&window.AndroidBridge.print){window.print=function(){window.AndroidBridge.print('Staff Hisab')}}
+function saveBlob(blob,name){
+ if(APP){
+  var r=new FileReader();
+  r.onload=function(){window.AndroidBridge.saveFile(name,blob.type||'application/octet-stream',String(r.result).split(',')[1])};
+  r.readAsDataURL(blob);return;
+ }
+ /* Android WebView blob: link se 0-byte (khali) file banati hai, isliye Android par data: link use karte hain */
+ if(/Android/i.test(navigator.userAgent)){
+  var r2=new FileReader();
+  r2.onload=function(){
+   var a=document.createElement('a');a.href=r2.result;a.download=name;
+   document.body.appendChild(a);a.click();document.body.removeChild(a);
+  };
+  r2.readAsDataURL(blob);return;
+ }
+ var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function fd(iso){var p=iso.split('-');return (+p[2])+'.'+(+p[1])+'.'+p[0].slice(2)}
+function today(){var t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+function num(v){var n=parseFloat(v);return isNaN(n)?0:n}
+
+function show(n){
+ $('fab').style.display=n===3?'block':'none';
+ for(var i=1;i<=4;i++){$('p'+i).classList.toggle('on',i===n);$('t'+i).classList.toggle('on',i===n)}
+ if(n===1)renderStaff(); if(n===2){fillSelects();if(!$('aMonth').value)$('aMonth').value=today().slice(0,7);renderAdv()} if(n===3){fillSelects();fillXl();if(!$('dMonth').value)$('dMonth').value=today().slice(0,7);$('pSize').value=db.psize||'auto';setMode(db.dmode||'card')}
+ if(n===4){if(!$('attDate').value)$('attDate').value=today();if(!$('attMonth').value)$('attMonth').value=today().slice(0,7);renderAttDay();renderAttMonth()}
+}
+
+/* ---- Staff Master ---- */
+function saveStaff(){
+ var name=$('sName').value.trim(), sal=num($('sSal').value);
+ if(!name){alert('Staff ka naam likho');return}
+ if(sal<=0){alert('Salary likho');return}
+ if(editId){var s=db.staff.find(function(x){return x.id===editId});s.name=name;s.salary=sal}
+ else db.staff.push({id:uid(),name:name,salary:sal,absence:0});
+ save();cancelEdit();renderStaff();
+}
+function editStaff(id){
+ var s=db.staff.find(function(x){return x.id===id});editId=id;
+ $('sName').value=s.name;$('sSal').value=s.salary;
+ $('smTitle').textContent='Staff edit karo';$('sBtn').textContent='Update';$('sCancel').style.display='block';
+ window.scrollTo(0,0);
+}
+function cancelEdit(){
+ editId=null;$('sName').value='';$('sSal').value='';
+ $('smTitle').textContent='Staff add karo';$('sBtn').textContent='Staff Add';$('sCancel').style.display='none';
+}
+function delStaff(id){
+ var s=db.staff.find(function(x){return x.id===id});
+ if(!confirm(s.name+' ko delete karna hai? Uske saare advance bhi delete ho jayenge.'))return;
+ db.staff=db.staff.filter(function(x){return x.id!==id});
+ db.adv=db.adv.filter(function(x){return x.sid!==id});
+ Object.keys(db.att).forEach(function(d){delete db.att[d][id]});
+ save();renderStaff();
+}
+function openPeriod(s){return (s.off||[]).filter(function(p){return !p.to})[0]}
+function renderStaff(){
+ var offc=db.staff.filter(function(s){return openPeriod(s)}).length;
+ $('sCount').textContent=db.staff.length?'('+db.staff.length+(offc?', '+offc+' off':'')+')':'';
+ if(!db.staff.length){$('sList').innerHTML='<div class="empty">Abhi koi staff nahi hai. Upar naam aur salary likh kar add karo.</div>';return}
+ var h='<table class="list"><tr><th>#</th><th>Name</th><th class="r">Salary</th><th></th></tr>';
+ db.staff.forEach(function(s,i){
+  var op=openPeriod(s),st='';
+  if(op)st+='<br><small style="color:#c00;font-weight:bold">OFF - '+fd(op.from)+' se</small>';
+  (s.off||[]).filter(function(p){return p.to}).forEach(function(p){st+='<br><small style="color:#777">Off tha: '+fd(p.from)+' se '+fd(p.to)+' tak</small>'});
+  h+='<tr><td>'+(i+1)+'</td><td>'+esc(s.name)+st+'</td><td class="r">'+s.salary+'</td><td class="r" style="white-space:nowrap">'+
+  '<button class="mini" onclick="editStaff(\''+s.id+'\')">Edit</button><button class="mini" onclick="offStaff(\''+s.id+'\')">'+(op?'On':'Off')+'</button><button class="mini del" onclick="delStaff(\''+s.id+'\')">Delete</button></td></tr>';
+ });
+ $('sList').innerHTML=h+'</table>';
+}
+var offId=null;
+function offStaff(id){
+ var s=db.staff.find(function(x){return x.id===id}),op=openPeriod(s);offId=id;
+ $('offBox').style.display='block';
+ $('offTitle').textContent=s.name+(op?' - wapas On karo':' - Off karo');
+ $('offLbl').textContent=op?'Wapas kaam par kab se (is date se attendance phir lagegi)':'Off kab se (is date se attendance nahi lagegi)';
+ $('offHint').textContent=op?'Abhi OFF hai: '+fd(op.from)+' se.':'Last kaam ka din = is date se ek din pehle ka din.';
+ $('offDate').value=today();$('offUndo').style.display=op?'block':'none';
+ $('offBox').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cancelOff(){offId=null;$('offBox').style.display='none'}
+function saveOff(){
+ var s=db.staff.find(function(x){return x.id===offId});if(!s)return;
+ var d=$('offDate').value,op=openPeriod(s);
+ if(!d){alert('Date chuno');return}
+ if(op){
+  if(d<=op.from){alert('On ki date, Off ki date ('+fd(op.from)+') ke baad ki honi chahiye.');return}
+  if(!confirm(s.name+' ko '+fd(d)+' se wapas On karna hai?'))return;
+  op.to=d;
+ }else{
+  if((s.off||[]).some(function(p){return p.to&&d<p.to})){alert('Ye date pichhle Off period ke andar aa rahi hai. Date check karo.');return}
+  if(!confirm(s.name+' ko '+fd(d)+' se OFF karna hai? Is date se attendance nahi lagegi.'))return;
+  s.off=s.off||[];s.off.push({from:d,to:''});
+ }
+ save();cancelOff();renderStaff();
+}
+function undoOff(){
+ var s=db.staff.find(function(x){return x.id===offId});if(!s)return;
+ if(!confirm('Ye Off hatana hai? '+s.name+' pehle ki tarah Active ho jayega.'))return;
+ s.off=(s.off||[]).filter(function(p){return p.to});
+ save();cancelOff();renderStaff();
+}
+
+function tgXl(){
+ var b=$('xlBox'),o=b.style.display==='none';
+ b.style.display=o?'block':'none';$('xlArr').textContent=o?'▲':'▼';
+}
+function tgBk(){
+ var b=$('bkBox'),o=b.style.display==='none';
+ b.style.display=o?'block':'none';$('bkArr').textContent=o?'▲':'▼';
+}
+function tgList(){
+ var b=$('sListBox'),o=b.style.display==='none';
+ b.style.display=o?'block':'none';$('sArr').textContent=o?'▲':'▼';
+}
+
+/* ---- Advance Entry ---- */
+function fillSelects(){
+ var a=$('aStaff'),d=$('dStaff'),av=a.value,dv=d.value;
+ var opts=db.staff.map(function(s){return '<option value="'+s.id+'">'+esc(s.name)+'</option>'}).join('');
+ a.innerHTML=opts||'<option value="">-- pehle staff add karo --</option>';
+ d.innerHTML=(db.staff.length?'<option value="all">Sabhi Staff</option>':'')+opts;
+ if(av&&db.staff.some(function(s){return s.id===av}))a.value=av;
+ if(dv&&(dv==='all'||db.staff.some(function(s){return s.id===dv})))d.value=dv;
+ if(!$('aDate').value)$('aDate').value=today();
+}
+function saveAdv(){
+ var sid=$('aStaff').value,date=$('aDate').value,amt=num($('aAmt').value);
+ if(!sid){alert('Pehle staff chuno');return}
+ if(!date){alert('Date chuno');return}
+ if(amt<=0){alert('Amount likho');return}
+ var rem=$('aRem').value.trim(),e={id:uid(),sid:sid,date:date,amt:amt};if(rem)e.rem=rem;db.adv.push(e);
+ save();$('aAmt').value='';$('aRem').value='';$('aMonth').value=date.slice(0,7);renderAdv();
+}
+function delAdv(id){
+ if(!confirm('Ye entry delete karni hai?'))return;
+ db.adv=db.adv.filter(function(x){return x.id!==id});save();renderAdv();
+}
+function advOf(sid){return db.adv.filter(function(x){return x.sid===sid}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0})}
+function renderAdv(){
+ var sid=$('aStaff').value,ym=$('aMonth').value||today().slice(0,7);
+ if(!sid){$('aList').innerHTML='<div class="empty">Staff Master me staff add karo.</div>';return}
+ var l=advMonth(sid,ym);
+ if(!l.length){$('aList').innerHTML='<div class="empty">'+mlabel(ym)+' me is staff ka koi advance nahi hai.</div>';return}
+ var t=0,h='<table class="list"><tr><th>Date</th><th class="r">Amount</th><th></th></tr>';
+ l.forEach(function(e){t+=e.amt;h+='<tr><td>'+fd(e.date)+(e.rem?'&nbsp; <span class="rm">'+esc(e.rem)+'</span>':'')+'</td><td class="r">'+e.amt+'</td><td class="r"><button class="mini del" onclick="delAdv(\''+e.id+'\')">Delete</button></td></tr>'});
+ $('aList').innerHTML=h+'<tr class="tot"><td>Total</td><td class="r">'+t+'</td><td></td></tr></table>';
+}
+
+/* ---- Attendance ---- */
+function pad(n){return String(n).padStart(2,'0')}
+function dim(ym){var p=ym.split('-');return new Date(+p[0],+p[1],0).getDate()}
+function renderAttDay(){
+ var d=$('attDate').value||today(),rec=db.att[d]||{};
+ if(!db.staff.length){$('attDay').innerHTML='<div class="empty">Pehle Staff Master me staff add karo.</div>';return}
+ var act=db.staff.filter(function(s){return !isOff(s,d)}),off=db.staff.filter(function(s){return isOff(s,d)});
+ var h=act.map(function(s){
+  var v=rec[s.id]||'';
+  return '<div class="att-row"><div class="nm">'+esc(s.name)+'</div>'+
+   ['P','A','L','H'].map(function(k){return '<button class="pa '+k+(v===k?' on':'')+'" onclick="mark(\''+s.id+'\',\''+k+'\')">'+k+'</button>'}).join('')+'</div>';
+ }).join('');
+ if(!act.length)h='<div class="empty">Is din sabhi staff OFF hain.</div>';
+ if(off.length)h+='<p class="hint" style="margin-top:8px">OFF hain (attendance nahi lagegi): '+off.map(function(s){return esc(s.name)}).join(', ')+'</p>';
+ $('attDay').innerHTML=h;
+}
+function mark(sid,k){
+ var d=$('attDate').value||today();db.att[d]=db.att[d]||{};
+ if(db.att[d][sid]===k)delete db.att[d][sid];else db.att[d][sid]=k;
+ save();renderAttDay();renderAttMonth();
+}
+function allPresent(){
+ var d=$('attDate').value||today();db.att[d]=db.att[d]||{};
+ db.staff.forEach(function(s){if(!isOff(s,d)&&!db.att[d][s.id])db.att[d][s.id]='P'});
+ save();renderAttDay();renderAttMonth();
+}
+function renderAttMonth(){
+ var ym=$('attMonth').value;if(!ym)return;
+ if(!db.staff.length){$('attSum').innerHTML='<div class="empty">Staff add karo, phir yaha hisab dikhega.</div>';$('attGrid').innerHTML='';return}
+ var n=dim(ym),t='<p class="hint">Mahine ke total din: <b>'+n+'</b>. Database me Absence A se (aur H ka aadha) apne aap banta hai. OFF din Absence me jodte hain.</p><table class="list"><tr><th>Staff</th><th class="r">P</th><th class="r">A (chutti)</th><th class="r">L</th><th class="r">H</th><th class="r">Off</th><th class="r">Baaki</th></tr>',
+ g='<table class="grid"><tr><th>Staff</th>';
+ for(var i=1;i<=n;i++)g+='<th>'+i+'</th>';
+ g+='</tr>';
+ db.staff.forEach(function(s){
+  var c={P:0,A:0,L:0,H:0},of=0,row='<tr><td>'+esc(s.name)+'</td>';
+  for(var i=1;i<=n;i++){
+   var dd=ym+'-'+pad(i),k;
+   if(isOff(s,dd)){k='OFF';of++}else{k=(db.att[dd]||{})[s.id]||'';if(k)c[k]++}
+   row+='<td class="c'+k+'">'+k+'</td>';
+  }
+  g+=row+'</tr>';
+  t+='<tr><td>'+esc(s.name)+'</td><td class="r">'+c.P+'</td><td class="r"><b>'+c.A+'</b></td><td class="r">'+c.L+'</td><td class="r">'+c.H+'</td><td class="r">'+of+'</td><td class="r">'+(n-c.P-c.A-c.L-c.H-of)+'</td></tr>';
+ });
+ $('attSum').innerHTML=t+'</table>';
+ $('attGrid').innerHTML=g+'</table>';
+}
+
+/* ---- Excel (.xlsx) download ---- */
+var S={t:1,sec:2,hd:3,tx:4,nu:5,ce:6,P:7,A:8,L:9,tt:10,tn:11,OFF:12,H:13};
+function xlCol(n){var s='';while(n>0){var m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s}
+function Sh(){this.c=[];this.m=[];this.w={}}
+Sh.prototype.put=function(r,c,v,st,span){
+ this.c.push({r:r,c:c,v:v,s:st});
+ for(var i=1;i<(span||1);i++)this.c.push({r:r,c:c+i,v:null,s:st});
+ if(span>1)this.m.push(xlCol(c)+r+':'+xlCol(c+span-1)+r);
+};
+Sh.prototype.xml=function(){
+ var rows={},w=this.w;
+ this.c.forEach(function(x){(rows[x.r]=rows[x.r]||[]).push(x)});
+ var sd=Object.keys(rows).map(Number).sort(function(a,b){return a-b}).map(function(r){
+  return '<row r="'+r+'">'+rows[r].sort(function(a,b){return a.c-b.c}).map(function(x){
+   var ref=xlCol(x.c)+r,st=' s="'+(x.s||0)+'"';
+   if(x.v===null||x.v==='')return '<c r="'+ref+'"'+st+'/>';
+   if(typeof x.v==='number')return '<c r="'+ref+'"'+st+'><v>'+x.v+'</v></c>';
+   return '<c r="'+ref+'"'+st+' t="inlineStr"><is><t xml:space="preserve">'+esc(x.v)+'</t></is></c>';
+  }).join('')+'</row>';
+ }).join('');
+ var wk=Object.keys(w).map(Number).sort(function(a,b){return a-b});
+ var cols=wk.length?'<cols>'+wk.map(function(k){return '<col min="'+k+'" max="'+k+'" width="'+w[k]+'" customWidth="1"/>'}).join('')+'</cols>':'';
+ var mg=this.m.length?'<mergeCells count="'+this.m.length+'">'+this.m.map(function(x){return '<mergeCell ref="'+x+'"/>'}).join('')+'</mergeCells>':'';
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/>'+cols+'<sheetData>'+sd+'</sheetData>'+mg+'<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+};
+var CRC=(function(){var t=[],c,n,k;for(n=0;n<256;n++){c=n;for(k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(b){var c=0xFFFFFFFF;for(var i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function zipFiles(files){
+ var enc=new TextEncoder(),parts=[],cd=[],off=0;
+ files.forEach(function(f){
+  var nb=enc.encode(f.n),bd=enc.encode(f.d),crc=crc32(bd);
+  var h=new DataView(new ArrayBuffer(30));
+  h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(12,0x21,true);
+  h.setUint32(14,crc,true);h.setUint32(18,bd.length,true);h.setUint32(22,bd.length,true);h.setUint16(26,nb.length,true);
+  parts.push(new Uint8Array(h.buffer),nb,bd);
+  var c=new DataView(new ArrayBuffer(46));
+  c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(14,0x21,true);
+  c.setUint32(16,crc,true);c.setUint32(20,bd.length,true);c.setUint32(24,bd.length,true);c.setUint16(28,nb.length,true);c.setUint32(42,off,true);
+  cd.push(new Uint8Array(c.buffer),nb);
+  off+=30+nb.length+bd.length;
+ });
+ var cl=0;cd.forEach(function(x){cl+=x.length});
+ var e=new DataView(new ArrayBuffer(22));
+ e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cl,true);e.setUint32(16,off,true);
+ return new Blob(parts.concat(cd,[new Uint8Array(e.buffer)]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function xlStyles(){
+ var B='<border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border>';
+ function xf(font,fill,bord,al){return '<xf numFmtId="0" fontId="'+font+'" fillId="'+fill+'" borderId="'+bord+'" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="'+al+'" vertical="center" wrapText="1"/></xf>'}
+ function fl(c){return '<fill><patternFill patternType="solid"><fgColor rgb="FF'+c+'"/><bgColor indexed="64"/></patternFill></fill>'}
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+ '<fonts count="5"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF2B8A00"/><name val="Calibri"/></font></fonts>'+
+ '<fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'+fl('D9D9D9')+fl('4A86E8')+fl('D93025')+fl('FF9900')+fl('BFBFBF')+fl('8E44AD')+'</fills>'+
+ '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>'+B+'</borders>'+
+ '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+ '<cellXfs count="14"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+ xf(1,0,0,'left')+xf(2,2,1,'left')+xf(3,3,1,'center')+xf(0,0,1,'left')+xf(0,0,1,'right')+xf(0,0,1,'center')+
+ xf(4,0,1,'center')+xf(3,4,1,'center')+xf(3,5,1,'center')+xf(2,5,1,'left')+xf(2,5,1,'right')+xf(0,6,1,'center')+xf(3,7,1,'center')+'</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+}
+function monthsWithData(){
+ var m={};
+ db.adv.forEach(function(e){m[e.date.slice(0,7)]=1});
+ Object.keys(db.att).forEach(function(d){var r=db.att[d];if(r&&Object.keys(r).length)m[d.slice(0,7)]=1});
+ return Object.keys(m).sort();
+}
+function fillXl(){
+ var sel=$('xMonth'),old=sel.value,ms=monthsWithData(),cur=today().slice(0,7);
+ if(ms.indexOf(cur)<0){ms.push(cur);ms.sort()}
+ sel.innerHTML='<option value="all">Sabhi mahine (har mahine ki alag sheet)</option>'+ms.map(function(m){return '<option value="'+m+'">'+mlabel(m)+'</option>'}).join('');
+ if(old&&(old==='all'||ms.indexOf(old)>=0))sel.value=old;
+}
+function xlMaster(){
+ var sh=new Sh(),r=1,t=0;sh.w[1]=28;sh.w[2]=14;sh.w[3]=26;
+ sh.put(r,1,'STAFF MASTER',S.t);r+=2;
+ sh.put(r,1,'Staff Name',S.hd);sh.put(r,2,'Salary',S.hd);sh.put(r,3,'Status',S.hd);r++;
+ db.staff.forEach(function(s){
+  var op=openPeriod(s);
+  sh.put(r,1,s.name,S.tx);sh.put(r,2,s.salary,S.nu);sh.put(r,3,op?'OFF - '+fd(op.from)+' se':'Active',S.tx);t+=s.salary;r++;
+ });
+ sh.put(r,1,'TOTAL',S.tt);sh.put(r,2,t,S.tn);sh.put(r,3,'',S.tt);
+ return sh;
+}
+function xlMonth(ym){
+ var n=dim(ym),sh=new Sh(),W=n+6,r=1,i;
+ sh.w[1]=26;for(i=2;i<=W;i++)sh.w[i]=5.5;
+ sh.put(r,1,'STAFF HISAB - '+mlabel(ym),S.t);r+=2;
+ /* 1. Attendance */
+ sh.put(r,1,'ATTENDANCE',S.sec,W);r++;
+ sh.put(r,1,'Staff Name',S.hd);for(i=1;i<=n;i++)sh.put(r,1+i,i,S.hd);
+ sh.put(r,n+2,'P',S.hd);sh.put(r,n+3,'A',S.hd);sh.put(r,n+4,'L',S.hd);sh.put(r,n+5,'H',S.hd);sh.put(r,n+6,'Off',S.hd);r++;
+ db.staff.forEach(function(s){
+  var c={P:0,A:0,L:0,H:0},of=0;sh.put(r,1,s.name,S.tx);
+  for(var d=1;d<=n;d++){
+   var dd=ym+'-'+pad(d),k;
+   if(isOff(s,dd)){k='OFF';of++}else{k=(db.att[dd]||{})[s.id]||'';if(k)c[k]++}
+   sh.put(r,1+d,k,k?S[k]:S.ce);
+  }
+  sh.put(r,n+2,c.P,S.nu);sh.put(r,n+3,c.A,S.nu);sh.put(r,n+4,c.L,S.nu);sh.put(r,n+5,c.H,S.nu);sh.put(r,n+6,of,S.nu);r++;
+ });
+ r++;
+ /* 2. Advance entry (sabhi staff) */
+ sh.put(r,1,'ADVANCE ENTRY',S.sec,W);r++;
+ sh.put(r,1,'Staff Name',S.hd);sh.put(r,2,'Date',S.hd,4);sh.put(r,6,'Amount',S.hd,4);sh.put(r,10,'Remarks',S.hd,12);r++;
+ var ta=0;
+ db.staff.forEach(function(s){advMonth(s.id,ym).forEach(function(e){
+  ta+=e.amt;sh.put(r,1,s.name,S.tx);sh.put(r,2,fd(e.date),S.ce,4);sh.put(r,6,e.amt,S.nu,4);sh.put(r,10,e.rem||'',S.tx,12);r++;
+ })});
+ sh.put(r,1,'TOTAL',S.tt);sh.put(r,2,'',S.tt,4);sh.put(r,6,ta,S.tn,4);sh.put(r,10,'',S.tt,12);r+=2;
+ /* 3. Salary list */
+ sh.put(r,1,'SALARY LIST',S.sec,W);r++;
+ var H=['Salary','Absence (Day)','Amount','Advance','Balance','Last Month Balance'];
+ sh.put(r,1,'Staff Name',S.hd);H.forEach(function(x,j){sh.put(r,2+j*4,x,S.hd,4)});r++;
+ var T=[0,0,0,0,0,0];
+ db.staff.filter(function(s){return shown(s,ym)}).forEach(function(s){
+  var adv=0;advMonth(s.id,ym).forEach(function(e){adv+=e.amt});
+  var d=absOf(s,ym),am=cut(s,d),bal=s.salary-am-adv,lb=lastBal(s,ym);
+  var V=[s.salary,d,am,adv,bal,lb===null?'-':lb];
+  sh.put(r,1,s.name,S.tx);V.forEach(function(x,j){sh.put(r,2+j*4,x,S.nu,4);if(typeof x==='number')T[j]+=x});r++;
+ });
+ sh.put(r,1,'TOTAL',S.tt);T.forEach(function(x,j){sh.put(r,2+j*4,x,S.tn,4)});
+ var ofl=db.staff.filter(function(s){return !shown(s,ym)}).map(function(s){return s.name});
+ if(ofl.length){r+=2;sh.put(r,1,'OFF (is mahine poora): '+ofl.join(', '),S.tx,W)}
+ return sh;
+}
+function xlDownload(){
+ if(!db.staff.length){alert('Pehle staff add karo');return}
+ var v=$('xMonth').value||'all',ms=v==='all'?monthsWithData():[v];
+ if(!ms.length){alert('Abhi koi attendance ya advance entry nahi hai.');return}
+ var sheets=[{n:'Staff Master',x:xlMaster()}].concat(ms.map(function(m){return{n:mlabel(m),x:xlMonth(m)}}));
+ var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+  sheets.map(function(x,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'}).join('')+'</Types>';
+ var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+ var wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+  sheets.map(function(x,i){return '<sheet name="'+esc(x.n)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'}).join('')+'</sheets></workbook>';
+ var wr='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+  sheets.map(function(x,i){return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'}).join('')+
+  '<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+ var files=[{n:'[Content_Types].xml',d:ct},{n:'_rels/.rels',d:rels},{n:'xl/workbook.xml',d:wb},{n:'xl/_rels/workbook.xml.rels',d:wr},{n:'xl/styles.xml',d:xlStyles()}]
+  .concat(sheets.map(function(x,i){return{n:'xl/worksheets/sheet'+(i+1)+'.xml',d:x.x.xml()}}));
+ try{
+  saveBlob(zipFiles(files),'Staff_Hisab_'+(v==='all'?'Sabhi_Mahine':mlabel(v).replace(' ','_'))+'.xlsx');
+ }catch(e){alert('Excel download nahi hua. Is file ko Chrome browser me kholkar try karo.')}
+}
+
+/* ---- Backup / Restore ---- */
+function bkJson(){return JSON.stringify({app:'staff_hisab',saved:new Date().toISOString(),data:db})}
+function bkDownload(){
+ try{
+  saveBlob(new Blob([bkJson()],{type:'application/json'}),'staff_hisab_backup_'+today()+'.json');
+  if(!APP)alert('Backup file download ho gayi. Agar file nahi mili to "Backup Copy (text)" use karo.');
+ }catch(e){alert('Download nahi hua. "Backup Copy (text)" use karo.')}
+}
+function bkCopy(){
+ var t=$('bkText');t.value=bkJson();t.focus();t.select();
+ var ok=false;try{ok=document.execCommand('copy')}catch(e){}
+ if(!ok&&navigator.clipboard){navigator.clipboard.writeText(t.value).then(function(){alert('Backup copy ho gaya. Kahin paste karke save kar lo.')},function(){alert('Text box me backup aa gaya hai. Use select karke copy karo.')});return}
+ alert(ok?'Backup copy ho gaya. Kahin paste karke save kar lo.':'Text box me backup aa gaya hai. Use select karke copy karo.');
+}
+function bkRead(inp){
+ var f=inp.files&&inp.files[0];if(!f)return;
+ var r=new FileReader();r.onload=function(){bkRestore(r.result);inp.value=''};r.readAsText(f);
+}
+function bkRestore(txt){
+ var o;try{o=JSON.parse(txt)}catch(e){alert('Backup sahi nahi hai.');return}
+ var d=o&&o.data?o.data:o;
+ if(!d||!Array.isArray(d.staff)||!Array.isArray(d.adv)){alert('Ye staff hisab ka backup nahi lagta.');return}
+ if(!confirm('Abhi ka saara data hat kar backup ka data aa jayega ('+d.staff.length+' staff). Aage badho?'))return;
+ db={staff:d.staff,adv:d.adv,att:d.att||{},psize:d.psize};
+ save();$('bkText').value='';cancelEdit();renderStaff();alert('Restore ho gaya.');
+}
+
+/* ---- Screenshot preview / save / share ---- */
+var shotBlob=null,shotName='';
+function showShot(blob,nm,url){
+ shotBlob=blob;shotName=nm;
+ $('shotImg').src=url;
+ var can=false;
+ try{can=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([blob],nm,{type:'image/png'})]}))}catch(e){}
+ $('shotShare').style.display=can?'':'none';
+ $('shotBox').style.display='flex';
+}
+function closeShot(){$('shotBox').style.display='none';$('shotImg').removeAttribute('src');shotBlob=null}
+function saveShot(){if(shotBlob)saveBlob(shotBlob,shotName)}
+function shareShot(){
+ try{
+  var f=new File([shotBlob],shotName,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:shotName}).catch(function(){});return}
+ }catch(e){}
+ saveShot();
+}
+
+/* ---- Screenshot (sirf khule hue staff ka hisab) ---- */
+function shotDb(){
+ var ym=$('dMonth').value||today().slice(0,7),host=document.createElement('div'),wrap=document.createElement('div'),names=[],W;
+ if(dMode==='list'){
+  var sl=$('dView').querySelector('.sl');if(!sl){alert('Screenshot ke liye kuch nahi hai.');return}
+  W=690;wrap.appendChild(sl.cloneNode(true));
+ }else{
+  var cws=[].slice.call($('dView').querySelectorAll('.cw')).filter(function(c){var b=c.querySelector('[id^=cb_]');return b&&b.style.display!=='none'});
+  if(!cws.length){alert('Pehle jis staff ka screenshot chahiye uska naam dabakar kholo. Jo khule honge sirf wahi screenshot me aayenge.');return}
+  W=384;
+  var t=document.createElement('div');t.setAttribute('style','text-align:center;font-weight:bold;font-size:15px;margin-bottom:8px');
+  t.textContent='Staff Hisab - '+mlabel(ym);wrap.appendChild(t);
+  cws.forEach(function(c){
+   names.push(c.querySelector('.ch span').textContent);
+   var cl=c.cloneNode(true);
+   var ar=cl.querySelector('[id^=ar_]');if(ar)ar.textContent='';
+   wrap.appendChild(cl);
+  });
+ }
+ [].forEach.call(wrap.querySelectorAll('[id]'),function(e){e.removeAttribute('id')});
+ [].forEach.call(wrap.querySelectorAll('[onclick]'),function(e){e.removeAttribute('onclick')});
+ var css=document.querySelector('style').textContent;
+ var st=document.createElement('style');st.textContent=css;wrap.insertBefore(st,wrap.firstChild);
+ wrap.setAttribute('style','width:'+W+'px;background:#fff;padding:12px;font-family:Arial,Helvetica,sans-serif;color:#1f1f1f');
+ host.setAttribute('style','position:absolute;left:-10000px;top:0');host.appendChild(wrap);document.body.appendChild(host);
+ var H=wrap.offsetHeight;
+ var xml=new XMLSerializer().serializeToString(wrap);
+ document.body.removeChild(host);
+ var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+xml+'</foreignObject></svg>';
+ var img=new Image();
+ img.onload=function(){
+  var sc=2,c=document.createElement('canvas');c.width=W*sc;c.height=H*sc;
+  var x=c.getContext('2d');x.scale(sc,sc);x.fillStyle='#fff';x.fillRect(0,0,W,H);x.drawImage(img,0,0);
+  var nm=(dMode==='list'?'Salary_List':(names.length===1?names[0].replace(/[^A-Za-z0-9]+/g,'_'):'Staff_Hisab'))+'_'+mlabel(ym).replace(' ','_')+'.png';
+  try{c.toBlob(function(b){if(b)showShot(b,nm,c.toDataURL('image/png'));else alert('Screenshot nahi ban paya.')},'image/png')}catch(e){alert('Screenshot nahi ban paya.')}
+ };
+ img.onerror=function(){alert('Screenshot nahi ban paya.')};
+ img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+
+/* ---- Show / hide staff cards ---- */
+var openC={};
+function tg(id){
+ var b=$('cb_'+id),o=b.style.display==='none';
+ b.style.display=o?'block':'none';openC[id]=o;$('ar_'+id).textContent=o?'▲':'▼';
+}
+function tgAll(o){db.staff.forEach(function(s){openC[s.id]=o});renderDb()}
+
+/* ---- Salary List ---- */
+var dMode='card';
+function setMode(m){
+ dMode=m;db.dmode=m;save();
+ $('m1').classList.toggle('on',m==='card');$('m2').classList.toggle('on',m==='list');
+ $('dStaff').style.display=m==='card'?'':'none';$('pSize').style.display=m==='card'?'':'none';$('pHint').style.display=m==='card'?'':'none';$('dAll').style.display=m==='card'?'':'none';$('pBtn').style.flex=m==='card'?'':'1';
+ renderDb();
+}
+function mlabel(ym){var mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],p=ym.split('-');return mn[+p[1]-1]+' '+p[0]}
+function slist(ym){
+ var td=0,tm=0,ta=0,tb=0,tl=0,h='<div class="sl"><table><tr><td class="ti" colspan="6">SALARY LIST - '+mlabel(ym)+'</td></tr><tr><th>Staff Name</th><th>Absence (Day)</th><th>Amount</th><th>Advance</th><th>Balance</th><th>Last Month Balance</th></tr>';
+ db.staff.filter(function(s){return shown(s,ym)}).forEach(function(s){
+  var adv=0;advMonth(s.id,ym).forEach(function(e){adv+=e.amt});
+  var d=absOf(s,ym),am=cut(s,d),bal=s.salary-am-adv,lb=lastBal(s,ym);
+  td+=d;tm+=am;ta+=adv;tb+=bal;if(lb!==null)tl+=lb;
+  h+='<tr><td>'+esc(s.name)+'</td><td>'+d+'</td><td>'+am+'</td><td>'+adv+'</td><td>'+bal+'</td><td>'+(lb===null?'-':lb)+'</td></tr>';
+ });
+ return h+'<tr class="tt"><td>TOTAL</td><td>'+td+'</td><td>'+tm+'</td><td>'+ta+'</td><td>'+tb+'</td><td>'+tl+'</td></tr></table>'+offNote(ym)+'</div>';
+}
+
+/* ---- Print ---- */
+function setPS(){db.psize=$('pSize').value;save()}
+function fitPlan(hs,W,H,G){
+ var best=null,mx=Math.min(8,hs.length);
+ for(var c=1;c<=mx;c++){
+  var rows=Math.ceil(hs.length/c),sum=0;
+  for(var r=0;r<rows;r++){var m=0;for(var j=r*c;j<Math.min(hs.length,(r+1)*c);j++)m=Math.max(m,hs[j]);sum+=m}
+  var z=Math.min((W-(c-1)*G)/c/360,(H-(rows-1)*G)/sum,1.3);
+  if(!best||z>best.z)best={c:c,z:z};
+ }
+ return best;
+}
+function printAtt(){document.body.classList.remove('printdb');window.print()}
+function printDb(){
+ if(!db.staff.length){alert('Pehle staff add karo');return}
+ var ym=$('dMonth').value||today().slice(0,7),pa=$('printArea');
+ pa.className='pst';
+ if(dMode==='list'){pa.style.gridTemplateColumns='1fr';pa.innerHTML='<div style="grid-column:1/-1">'+slist(ym)+'</div>';document.body.classList.add('printdb');window.print();return}
+ var sv=$('dStaff').value,L=db.staff.filter(function(x){return (sv==='all'||x.id===sv)&&shown(x,ym)});if(!L.length){alert('Is mahine me print karne ke liye koi staff nahi (sab OFF hain).');return}
+ pa.innerHTML=L.map(function(s){return card(s,ym)}).join('');
+ var hs=[].map.call(pa.querySelectorAll('.card'),function(e){return e.offsetHeight});
+ var W=725,H=990,G=10,mode=$('pSize').value,c,z;
+ if(mode==='auto'){var b=fitPlan(hs,W,H,G);c=b.c;z=b.z}
+ else{c={s:4,m:3,b:2}[mode];z=Math.min((W-(c-1)*G)/c/360,1.3)}
+ var mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],p=ym.split('-');
+ var cells=L.map(function(st,i){
+  return '<div class="cell" style="width:'+(360*z)+'px;height:'+(hs[i]*z+3)+'px"><div style="width:360px;transform:scale('+z+');transform-origin:0 0">'+card(st,ym)+'</div></div>';
+ }).join('');
+ pa.style.gridTemplateColumns='repeat('+c+','+(360*z)+'px)';
+ pa.innerHTML='<div class="ptitle" style="grid-column:1/-1">Staff Hisab - '+mn[+p[1]-1]+' '+p[0]+'</div>'+cells;
+ document.body.classList.add('printdb');
+ window.print();
+}
+window.onafterprint=function(){document.body.classList.remove('printdb')};
+
+/* ---- Database view (sheet style) ---- */
+function isOff(s,d){return (s.off||[]).some(function(p){return d>=p.from&&(!p.to||d<p.to)})}
+function offDays(s,ym){var c=0,n=dim(ym);for(var i=1;i<=n;i++){if(isOff(s,ym+'-'+pad(i)))c++}return c}
+function absOf(s,ym){var c=0,n=dim(ym);for(var i=1;i<=n;i++){var d=ym+'-'+pad(i),k=(db.att[d]||{})[s.id];if(isOff(s,d))c++;else if(k==='A')c++;else if(k==='H')c+=0.5}return c}
+function cut(s,days){return Math.min(s.salary,Math.round(s.salary/30*days))}
+function shown(s,ym){return offDays(s,ym)<dim(ym)||advMonth(s.id,ym).length>0}
+function offNote(ym){
+ var l=db.staff.filter(function(s){return !shown(s,ym)});
+ return l.length?'<p class="hint">OFF (is mahine poora): '+l.map(function(s){return esc(s.name)}).join(', ')+'</p>':'';
+}
+function prevYm(ym){var p=ym.split('-'),y=+p[0],m=+p[1]-1;if(m<1){m=12;y--}return y+'-'+pad(m)}
+function advMonth(sid,ym){return advOf(sid).filter(function(e){return e.date.slice(0,7)===ym})}
+function balOf(s,ym){var a=0;advMonth(s.id,ym).forEach(function(e){a+=e.amt});return s.salary-cut(s,absOf(s,ym))-a}
+function hasData(sid,ym){
+ return db.adv.some(function(e){return e.sid===sid&&e.date.slice(0,7)===ym})||Object.keys(db.att).some(function(d){return d.slice(0,7)===ym&&db.att[d][sid]});
+}
+function lastBal(s,ym){var pm=prevYm(ym);return hasData(s.id,pm)?balOf(s,pm):null}
+function absDetail(s,ym){
+ var n=dim(ym),A=[],H=[],parts=[];
+ for(var i=1;i<=n;i++){
+  var d=ym+'-'+pad(i),k=(db.att[d]||{})[s.id];
+  if(isOff(s,d))continue;
+  if(k==='A')A.push(i);else if(k==='H')H.push(i);
+ }
+ if(A.length)parts.push('A: '+A.join(', ')+'.');
+ if(H.length)parts.push('H: '+H.join(', ')+'.');
+ var ms=ym+'-01',me=ym+'-'+pad(n);
+ (s.off||[]).forEach(function(p){
+  if(p.from<=me&&(!p.to||p.to>ms))parts.push('OFF: '+fd(p.from)+' se'+(p.to?' ('+fd(p.to)+' ko wapas)':''));
+ });
+ return parts.join(' | ');
+}
+function card(s,ym){
+ var l=advMonth(s.id,ym),adv=0;l.forEach(function(e){adv+=e.amt});
+ var ad=absOf(s,ym),ab=cut(s,ad),bal=s.salary-ab-adv,lb=lastBal(s,ym);
+ var h='<div class="card"><table>'+
+ '<tr><td class="name" colspan="2">'+esc(s.name)+'</td></tr>'+
+ '<tr class="g"><td>Salary</td><td>'+s.salary+'</td></tr>'+
+ '<tr class="g"><td>Absence '+ad+'</td><td>'+ab+'</td></tr>'+(absDetail(s,ym)?'<tr class="ad"><td colspan="2">'+esc(absDetail(s,ym))+'</td></tr>':'')+
+ '<tr class="g"><td>advance</td><td>'+adv+'</td></tr>'+
+ '<tr class="bal"><td>BALANCE PAYBLE</td><td>'+bal+'</td></tr>'+
+ '<tr class="total"><td>TOTAL</td><td>'+s.salary+'</td></tr>'+
+ '<tr class="lm"><td>LAST MONTH BALANCE</td><td>'+(lb===null?'-':lb)+'</td></tr>'+
+ '<tr><td class="ab" colspan="2">ADVANCE&nbsp; BOOK</td></tr>'+
+ '<tr class="hd"><th>DATE</th><th>AMOUNT</th></tr>';
+ var rl=l.some(function(e){return e.rem});
+ l.forEach(function(e){h+='<tr class="en'+(rl?' rl':'')+'"><td>'+fd(e.date)+(e.rem?'&nbsp; <span class="rm">'+esc(e.rem)+'</span>':'')+'</td><td>'+e.amt+'</td></tr>'});
+ if(!l.length)h+='<tr class="en"><td colspan="2" style="text-align:center;color:#777">koi advance nahi</td></tr>';
+ return h+'</table></div>';
+}
+function renderDb(){
+ if(!db.staff.length){$('dView').innerHTML='<div class="box empty">Staff Master me staff add karo, phir yaha hisab dikhega.</div>';return}
+ var v=$('dStaff').value,ym=$('dMonth').value||today().slice(0,7);
+ if(dMode==='list'){$('dView').innerHTML=slist(ym);return}
+ var list=(v==='all'?db.staff:db.staff.filter(function(s){return s.id===v})).filter(function(s){return shown(s,ym)});
+ if(!list.length){$('dView').innerHTML=offNote(ym)+'<div class="box empty">Is mahine me dikhane ke liye koi staff nahi (sab OFF hain).</div>';return}
+var one=list.length===1;
+ $('dView').innerHTML=offNote(ym)+list.map(function(s){
+  var o=one||openC[s.id];
+  return '<div class="cw"><div class="ch" onclick="tg(\''+s.id+'\')"><span>'+esc(s.name)+'</span><span id="ar_'+s.id+'">'+(o?'▲':'▼')+'</span></div><div id="cb_'+s.id+'" style="display:'+(o?'block':'none')+'">'+card(s,ym)+'</div></div>';
+ }).join('');
+}
+
+load();show(1);
+</script>
+</body>
+</html>

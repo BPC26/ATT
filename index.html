@@ -29,6 +29,20 @@ table.list .r{text-align:right}
 .mini.del{color:#c00}
 .empty{color:#777;padding:10px 0;font-size:14px}
 .tot{font-weight:bold;background:var(--lgrey)}
+/* date strip (month header + date boxes) */
+.dstrip{position:relative;overflow-x:auto;white-space:nowrap;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+.mg{display:inline-block;vertical-align:top;border-left:2px solid #000}
+.mg:last-child{border-right:2px solid #000}
+.mh{display:block;background:#4a86e8;color:#fff;font-weight:bold;font-size:17px;border-top:2px solid #000;border-bottom:2px solid #000;padding:9px 0;white-space:nowrap}
+.mh span{position:sticky;left:0;display:inline-block;padding:0 12px}
+.md{display:block;white-space:nowrap;font-size:0}
+.dd{width:42px;height:44px;border:0;border-right:2px solid #000;border-bottom:2px solid #000;background:#fff;color:#000;font-size:18px;font-weight:bold;padding:0;margin:0;border-radius:0;cursor:pointer;vertical-align:top}
+.dd:last-child{border-right:0}
+.dd.sel{background:#ff9900}
+.dd.today{box-shadow:inset 0 -5px 0 #3aaa00}
+.dnav{display:flex;gap:8px;align-items:center;margin:8px 0 4px}
+.dnav .mini{margin:0;padding:9px 14px;font-size:15px;font-weight:bold}
+.dnav .txt{flex:1;font-size:13px;color:#333;text-align:center}
 /* attendance */
 .att-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e3e3e3}
 .att-row .nm{flex:1;font-size:15px}
@@ -196,8 +210,15 @@ table.grid th{background:var(--lgrey)}
  <div class="panel" id="p4">
   <div class="box noprint">
    <h2>Attendance Entry</h2>
-   <label>Date</label>
-   <input id="attDate" type="date" onchange="renderAttDay()">
+   <label>Mahina aur date chuno (left-right sarkao)</label>
+   <div class="dstrip" id="dstrip"></div>
+   <div class="dnav">
+    <button class="mini" onclick="stepDay(-1)">&#9664;</button>
+    <button class="mini" onclick="pickDate(today());centerSel()">Aaj</button>
+    <div class="txt" id="attDateTxt"></div>
+    <button class="mini" onclick="stepDay(1)">&#9654;</button>
+   </div>
+   <input id="attDate" type="hidden">
    <div style="margin-top:8px" id="attDay"></div>
    <button class="btn" onclick="allPresent()">Baaki sab ko Present (P) karo</button>
    <p class="hint" style="margin-top:8px">P = Present, A = Absence (chutti), L = Late, H = Aadha din (0.5 chutti). Dobara dabane se mark hat jata hai.</p>
@@ -296,7 +317,7 @@ function show(n){
  $('fab').style.display=n===3?'block':'none';
  for(var i=1;i<=4;i++){$('p'+i).classList.toggle('on',i===n);$('t'+i).classList.toggle('on',i===n)}
  if(n===1)renderStaff(); if(n===2){fillSelects();if(!$('aMonth').value)$('aMonth').value=today().slice(0,7);renderAdv()} if(n===3){fillSelects();fillXl();if(!$('dMonth').value)$('dMonth').value=today().slice(0,7);$('pSize').value=db.psize||'auto';setMode(db.dmode||'card')}
- if(n===4){if(!$('attDate').value)$('attDate').value=today();if(!$('attMonth').value)$('attMonth').value=today().slice(0,7);renderAttDay();renderAttMonth()}
+ if(n===4){if(!$('attDate').value)$('attDate').value=today();if(!$('attMonth').value)$('attMonth').value=$('attDate').value.slice(0,7);buildStrip();setAttTxt();renderAttDay();renderAttMonth()}
 }
 
 /* ---- Staff Master ---- */
@@ -423,6 +444,40 @@ function renderAdv(){
 /* ---- Attendance ---- */
 function pad(n){return String(n).padStart(2,'0')}
 function dim(ym){var p=ym.split('-');return new Date(+p[0],+p[1],0).getDate()}
+var MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function addM(ym,k){var p=ym.split('-'),y=+p[0],m=+p[1]-1+k;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+'-'+pad(m+1)}
+function buildStrip(){
+ var sel=$('attDate').value||today(),cur=today().slice(0,7),sm=sel.slice(0,7),t=today();
+ var start=addM(cur,-5),end=addM(cur,1),ms=monthsWithData();
+ if(ms.length&&ms[0]<start)start=ms[0];
+ if(sm<start)start=sm;if(sm>end)end=sm;
+ var h='',m=start;
+ while(m<=end){
+  var n=dim(m),p=m.split('-');
+  h+='<div class="mg"><div class="mh"><span>'+MON[+p[1]-1]+' '+p[0]+'</span></div><div class="md">';
+  for(var i=1;i<=n;i++){var d=m+'-'+pad(i);h+='<button class="dd'+(d===sel?' sel':'')+(d===t?' today':'')+'" data-d="'+d+'">'+i+'</button>'}
+  h+='</div></div>';m=addM(m,1);
+ }
+ var st=$('dstrip');st.innerHTML=h;
+ st.onclick=function(e){var b=e.target.closest?e.target.closest('.dd'):null;if(b)pickDate(b.getAttribute('data-d'))};
+ centerSel();
+}
+function centerSel(){var s=$('dstrip'),b=s.querySelector('.dd.sel');if(b)s.scrollLeft=Math.max(0,b.offsetLeft-s.clientWidth/2+b.offsetWidth/2)}
+function setAttTxt(){
+ var d=$('attDate').value,p=d.split('-'),w=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(+p[0],+p[1]-1,+p[2]).getDay()];
+ $('attDateTxt').textContent=(+p[2])+'.'+(+p[1])+'.'+p[0]+' ('+w+')';
+}
+function pickDate(d){
+ $('attDate').value=d;
+ var b=$('dstrip').querySelector('[data-d="'+d+'"]');
+ if(!b){buildStrip()}else{var o=$('dstrip').querySelector('.dd.sel');if(o)o.classList.remove('sel');b.classList.add('sel')}
+ $('attMonth').value=d.slice(0,7);
+ setAttTxt();renderAttDay();renderAttMonth();
+}
+function stepDay(k){
+ var p=($('attDate').value||today()).split('-'),x=new Date(+p[0],+p[1]-1,+p[2]+k);
+ pickDate(x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate()));centerSel();
+}
 function renderAttDay(){
  var d=$('attDate').value||today(),rec=db.att[d]||{};
  if(!db.staff.length){$('attDay').innerHTML='<div class="empty">Pehle Staff Master me staff add karo.</div>';return}
